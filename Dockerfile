@@ -8,14 +8,14 @@ FROM debian:buster-slim
 ARG ESP_VERSION="1.22.0-80-g6c4433a-5.2.0"
 
 # esp-idf framework
-ARG IDF_VERSION="v3.3-beta3"
+ARG IDF_VERSION="v4.1"
 
 # llvm-xtensa
 ARG CLANG_VERSION="248d9ce8765248d953c3e5ef4022fb350bbe6c51"
 ARG LLVM_VERSION="757e18f722dbdcd98b8479e25041b1eee1128ce9"
 
 # rust-xtensa
-ARG RUSTC_VERSION="b365cff41a60df8fd5f1237ef71897edad0375dd"
+ARG RUSTC_VERSION="e45940c1d4b03eb3e0761e2304c5238afd591d9f"
 
 # -------------------------------------------------------------------
 # Toolchain Path Config
@@ -43,22 +43,22 @@ ENV PATH "/root/.cargo/bin:${ESP_PATH}/bin:${PATH}"
 # -------------------------------------------------------------------
 
 RUN apt-get update \
- && apt-get install -y \
-       bison \
-       cmake \
-       curl \
-       flex \
-       g++ \
-       gcc \
-       git \
-       gperf \
-       libncurses-dev \
-       make \
-       ninja-build \
-       python \
-       python-pip \
-       wget \
- && rm -rf /var/lib/apt/lists/*
+      && apt-get install -y \
+      bison \
+      cmake \
+      curl \
+      flex \
+      g++ \
+      gcc \
+      git \
+      gperf \
+      libncurses-dev \
+      make \
+      ninja-build \
+      python \
+      python-pip \
+      wget \
+      && rm -rf /var/lib/apt/lists/*
 
 # -------------------------------------------------------------------
 # Setup esp32 toolchain
@@ -66,14 +66,14 @@ RUN apt-get update \
 
 WORKDIR "${ESP_BASE}"
 RUN curl \
-       --proto '=https' \
-       --tlsv1.2 \
-       -sSf \
-       -o "${ESP_PATH}.tar.gz" \
-       "https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-${ESP_VERSION}.tar.gz" \
- && mkdir "${ESP_PATH}" \
- && tar -xzf "${ESP_PATH}.tar.gz" -C "${ESP_PATH}" --strip-components 1 \
- && rm -rf "${ESP_PATH}.tar.gz"
+      --proto '=https' \
+      --tlsv1.2 \
+      -sSf \
+      -o "${ESP_PATH}.tar.gz" \
+      "https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-${ESP_VERSION}.tar.gz" \
+      && mkdir "${ESP_PATH}" \
+      && tar -xzf "${ESP_PATH}.tar.gz" -C "${ESP_PATH}" --strip-components 1 \
+      && rm -rf "${ESP_PATH}.tar.gz"
 
 # -------------------------------------------------------------------
 # Setup esp-idf
@@ -81,9 +81,9 @@ RUN curl \
 
 WORKDIR "${ESP_BASE}"
 RUN  git clone \
-       --recursive --single-branch -b "${IDF_VERSION}" \
-       https://github.com/espressif/esp-idf.git \
- && pip install --user -r "${IDF_PATH}/requirements.txt"
+      --recursive --single-branch -b "${IDF_VERSION}" \
+      https://github.com/espressif/esp-idf.git \
+      && pip install --user -r "${IDF_PATH}/requirements.txt"
 
 # -------------------------------------------------------------------
 # Build llvm-xtensa
@@ -91,30 +91,30 @@ RUN  git clone \
 
 WORKDIR "${LLVM_BASE}"
 RUN mkdir "${LLVM_PATH}" \
- && cd "${LLVM_PATH}" \
- && git init \
- && git remote add origin https://github.com/espressif/llvm-xtensa.git \
- && git fetch --depth 1 origin "${LLVM_VERSION}" \
- && git checkout FETCH_HEAD \
- && mkdir -p "${LLVM_PATH}/tools/clang" \
- && cd "${LLVM_PATH}/tools/clang" \
- && git init \
- && git remote add origin https://github.com/espressif/clang-xtensa.git \
- && git fetch --depth 1 origin "${CLANG_VERSION}" \
- && git checkout FETCH_HEAD \
- && mkdir -p "${LLVM_BUILD_PATH}" \
- && cd "${LLVM_BUILD_PATH}" \
- && cmake "${LLVM_PATH}" \
-       -DLLVM_TARGETS_TO_BUILD="Xtensa;X86" \
-       -DLLVM_INSTALL_UTILS=ON \
-       -DLLVM_BUILD_TESTS=0 \
-       -DLLVM_INCLUDE_TESTS=0 \
-       -DCMAKE_BUILD_TYPE=Release \
-       -DCMAKE_INSTALL_PREFIX="${LLVM_BASE}/llvm_install" \
-       -DCMAKE_CXX_FLAGS="-w" \
-       -G "Ninja" \
- && ninja install \
- && rm -rf "${LLVM_PATH}" "${LLVM_BUILD_PATH}"
+      && cd "${LLVM_PATH}" \
+      && git init \
+      && git remote add origin https://github.com/espressif/llvm-xtensa.git \
+      && git fetch --depth 1 origin "${LLVM_VERSION}" \
+      && git checkout FETCH_HEAD \
+      && mkdir -p "${LLVM_PATH}/tools/clang" \
+      && cd "${LLVM_PATH}/tools/clang" \
+      && git init \
+      && git remote add origin https://github.com/espressif/clang-xtensa.git \
+      && git fetch --depth 1 origin "${CLANG_VERSION}" \
+      && git checkout FETCH_HEAD \
+      && mkdir -p "${LLVM_BUILD_PATH}" \
+      && cd "${LLVM_BUILD_PATH}" \
+      && cmake "${LLVM_PATH}" \
+      -DLLVM_TARGETS_TO_BUILD="Xtensa;X86" \
+      -DLLVM_INSTALL_UTILS=ON \
+      -DLLVM_BUILD_TESTS=0 \
+      -DLLVM_INCLUDE_TESTS=0 \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX="${LLVM_BASE}/llvm_install" \
+      -DCMAKE_CXX_FLAGS="-w" \
+      -G "Ninja" \
+      && ninja install \
+      && rm -rf "${LLVM_PATH}" "${LLVM_BUILD_PATH}"
 
 # -------------------------------------------------------------------
 # Build rust-xtensa
@@ -122,31 +122,31 @@ RUN mkdir "${LLVM_PATH}" \
 
 WORKDIR "${RUSTC_BASE}"
 RUN git clone \
-        --recursive --single-branch \
-        https://github.com/MabezDev/rust-xtensa.git \
-        "${RUSTC_PATH}" \
- && mkdir -p "${RUSTC_BUILD_PATH}" \
- && cd "${RUSTC_PATH}" \
- && git reset --hard "${RUSTC_VERSION}" \
- && ./configure \
-        --llvm-root "${LLVM_INSTALL_PATH}" \
-        --prefix "${RUSTC_BUILD_PATH}" \
- && python ./x.py build \
- && python ./x.py install
+      --recursive --single-branch \
+      https://github.com/MabezDev/rust-xtensa.git \
+      "${RUSTC_PATH}" \
+      && mkdir -p "${RUSTC_BUILD_PATH}" \
+      && cd "${RUSTC_PATH}" \
+      && git reset --hard "${RUSTC_VERSION}" \
+      && ./configure \
+      --llvm-root "${LLVM_INSTALL_PATH}" \
+      --prefix "${RUSTC_BUILD_PATH}" \
+      && python ./x.py build \
+      && python ./x.py install
 
 # -------------------------------------------------------------------
 # Setup rustup toolchain
 # -------------------------------------------------------------------
 
 RUN curl \
-        --proto '=https' \
-        --tlsv1.2 \
-        -sSf \
-        https://sh.rustup.rs \
-    | sh -s -- -y --default-toolchain stable \
- && rustup component add rustfmt \
- && rustup toolchain link xtensa "${RUSTC_BUILD_PATH}" \
- && cargo install cargo-xbuild bindgen
+      --proto '=https' \
+      --tlsv1.2 \
+      -sSf \
+      https://sh.rustup.rs \
+      | sh -s -- -y --default-toolchain stable \
+      && rustup component add rustfmt \
+      && rustup toolchain link xtensa "${RUSTC_BUILD_PATH}" \
+      && cargo install cargo-xbuild bindgen
 
 # -------------------------------------------------------------------
 # Our Project
